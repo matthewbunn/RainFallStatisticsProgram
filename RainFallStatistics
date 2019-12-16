@@ -1,0 +1,101 @@
+' Program Name: Rainfall Activity 2000-2015 Windows Application
+' Author:       Matthew Bunn
+' Date:         December 15, 2019
+' Purpose:      The rainfall Windows Application uses a
+'               text file that contains the 2000-2015 Rain
+'               season statistics of named storms to find the
+'               average number of storms during the time period and
+'               to find the most active year.
+
+Option Strict On
+
+Public Class frmRainFall
+    Private _strRainYear(17) As String
+    Private _decRain(17) As Decimal
+
+    Private Sub frmRainFall_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        Dim objReader As IO.StreamReader
+        Dim strRainAmount As String
+        Dim intCount As Integer = 0
+        Dim intFill As Integer
+
+
+        lblRainfall.Text = ""
+        lblAverageRainfall.Text = ""
+        lblMaxRain.Text = ""
+        ' The If statement verifies that the file exists
+
+        If IO.File.Exists("C:\Users\ma3er\OneDrive\Documents\Rain.txt") = True Then
+            objReader = IO.File.OpenText("C:\Users\ma3er\OneDrive\Documents\Rain.txt")
+
+            Do While objReader.Peek <> -1
+                _strRainYear(intCount) = objReader.ReadLine()
+                strRainAmount = objReader.ReadLine()
+                _decRain(intCount) = Convert.ToDecimal(strRainAmount)
+                intCount += 1
+            Loop
+
+            objReader.Close()
+
+            ' The ComboBox object is filled with Rain years
+            For intFill = 0 To (_strRainYear.Length - 1)
+                cboYears.Items.Add(_strRainYear(intFill))
+            Next
+        Else
+            MsgBox("The file is not available. Restart the program when the file is available", , "Error")
+            Close()
+        End If
+
+    End Sub
+
+    Private Sub cboYears_SelectedIndexChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles cboYears.SelectedIndexChanged
+        ' The cboYears SelectedIndexChanged displays the number of Rains for the selected year
+        Dim intSelectedCityIndex As Integer
+
+        intSelectedCityIndex = cboYears.SelectedIndex
+        lblRainfall.Text = "The total rainfall in " & _strRainYear(intSelectedCityIndex) & " is " & _decRain(intSelectedCityIndex).ToString() & "."
+
+    End Sub
+
+    Private Sub btnStatistics_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnStatistics.Click
+        ' The btnStatistics click event calls two sub methods to computer the average and
+        ' most active rainfall in the years 2000-2017
+        ComputeAverage()
+        ComputeMostStorms()
+
+    End Sub
+
+    Private Sub ComputeMostStorms()
+        ' The ComputeMostStorms Sub method determines the year with the most rainfall
+        Dim intStormCount As Integer
+        Dim intLargestStormValue As Integer = 0
+        Dim intIndexValue As Integer = 0
+        Dim strYearValue As String = ""
+
+        For Each intStormCount In _decRain
+            intLargestStormValue = Math.Max(intLargestStormValue, intStormCount)
+            If (intStormCount >= intLargestStormValue) Then
+                strYearValue = _strRainYear(intIndexValue)
+            End If
+            intIndexValue += 1
+        Next
+        lblMaxRain.Text = strYearValue & " had the most rain between 2000-2017."
+    End Sub
+
+    Private Sub ComputeAverage()
+        ' The ComputeAverage Sub method computes the average number of inches of rain
+        ' in the years from 2000-2017
+        Dim intCountYears As Integer
+        Dim intYears As Integer = 0
+        Dim decTotalRains As Decimal = 0
+        Dim decAverageNumberOfRains As Decimal = 0D
+
+        For Each intCountYears In _decRain
+            decTotalRains += _decRain(intYears)
+            intYears += 1
+        Next
+        decAverageNumberOfRains = decTotalRains / Convert.ToDecimal(_decRain.Length())
+        lblAverageRainfall.Text = "The average rainfall was " & decAverageNumberOfRains.ToString("F1") & " inches."
+
+    End Sub
+End Class
